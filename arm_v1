@@ -1,0 +1,97 @@
+#include <Servo.h>
+
+Servo s1, s2, s3;
+
+float config_1[2];
+float config_2[2];
+
+const int SHOULDER_OFFSET = 90;
+const int ELBOW_OFFSET = 90;
+
+double should_angl = SHOULDER_OFFSET;
+double elb_angl = ELBOW_OFFSET;
+
+
+void setup() {
+  Serial.begin(9600);
+  s1.attach(7);  
+  s2.attach(8);
+  s3.attach(9);
+
+  s2.write(SHOULDER_OFFSET);
+  s3.write(ELBOW_OFFSET);
+  delay(500);
+
+  float L1=7.34;
+  float L2=6.96;
+
+  double targ_x= 7.704;
+  double targ_y= 6.95;
+  float r=sqrt(targ_x*targ_x + targ_y*targ_y);
+  float max_reach=L1+L2;
+
+  if (r<=max_reach){
+    Serial.println("Successful - possible (x,y) pos");
+
+    float alpha= acos((L1*L1+L2*L2-r*r)/(2*L1*L2));
+    float beta= acos((L1*L1+r*r-L2*L2)/(2*L1*r));
+    float phi= atan2(targ_y, targ_x);
+
+    float elb_bend= 180 - degrees(alpha);
+    float theta2_up=90 +elb_bend;
+    float theta2_down=90 -elb_bend;
+    float theta1_up= 90 - (degrees(phi) + degrees(beta));
+    float theta1_down= 90 - (degrees(phi) - degrees(beta));
+    theta1_up=constrain(theta1_up, 0, 180);
+    theta1_down=constrain(theta1_down, 0, 180);
+    theta2_up=constrain(theta2_up, 0, 180);
+    theta2_down=constrain(theta2_down, 0, 180);
+
+
+    config_1[0] = theta1_up;
+    config_1[1] = theta2_up;
+    config_2[0] = theta1_down;
+    config_2[1] = theta2_down;
+
+    Serial.print("Config1: ");
+    Serial.print(config_1[0]);
+    Serial.print(", ");
+    Serial.println(config_1[1]);
+
+    Serial.print("Config2: ");
+    Serial.print(config_2[0]);
+    Serial.print(", ");
+    Serial.println(config_2[1]);
+
+
+  } else{ 
+    Serial.println("Unsuccessful - impossible (x,y) pos");
+  }
+}
+void SmoothMove(Servo &myServo, int startAngle, int endAngle, int steps, int offset){
+    float stepSize=(endAngle-startAngle)/float(steps);
+    int stepDelay=20;
+    for (int i =0; i<=steps; i++){
+      float angle=startAngle+stepSize*i;
+      double fin_angle = angle;
+      fin_angle = constrain(fin_angle, 0, 180);
+      myServo.write(fin_angle);
+      delay(stepDelay);
+
+      
+    }
+    Serial.print("Servo ");
+    Serial.print(&myServo==&s2?"Shoulder":"Elbow");
+    Serial.print(" angle: ");
+    Serial.println(endAngle);
+  }
+void loop() {
+
+  SmoothMove(s2, should_angl, int(config_1[0]), 90, SHOULDER_OFFSET);
+  SmoothMove(s3, elb_angl, int(config_1[1]), 90, ELBOW_OFFSET);
+  delay(1000);
+
+  should_angl = int(config_1[0]);
+  elb_angl    = int(config_1[1]);
+
+}
