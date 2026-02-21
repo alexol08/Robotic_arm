@@ -8,3 +8,8 @@ I wanted a good amount of rotation and that is why in my model - 90 degrees is w
 
 *UPDATE*
 I have now just added base rotation as well so that it can work in all 3 axis. 
+
+*UPDATE*
+I have now made an end effector mechanism that helps open and close the 2 finger gripper. 
+This is done after the robot arm goes to the desired position. 
+End effector mimics tendon mechanism found in humans. 
