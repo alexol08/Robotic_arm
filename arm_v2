@@ -17,6 +17,7 @@ const int grip_closed=0;
 double base_angl = BASE_OFFSET;
 double should_angl = SHOULDER_OFFSET;
 double elb_angl = ELBOW_OFFSET;
+float rot_angle;
 
 
 void setup() {
@@ -35,13 +36,13 @@ void setup() {
   float L1=7.34;
   float L2=6.96;
 
-  double targ_x= 0;
-  double targ_y= L1+L2;
-  double targ_z= 0;
+  double targ_x= L1+L2;
+  double targ_y= 0;
+  double targ_z= 90;
   float r_base = sqrt(targ_x*targ_x + targ_z*targ_z);
   float r=sqrt(r_base*r_base + targ_y*targ_y);
   float max_reach=L1+L2;
-  float rot_angle = degrees(atan2(targ_z, targ_x)) + BASE_OFFSET;
+  rot_angle = degrees(atan2(targ_z, targ_x)) + BASE_OFFSET;
   rot_angle=constrain(rot_angle, 0, 180);
 
   if (r<=max_reach){
@@ -108,11 +109,11 @@ void SmoothMove(Servo &myServo, int startAngle, int endAngle, int steps, int off
   }
 
 void Grab(){
-  for ( int angle = grip_open;angle <= grip_close; angle++){
+  for ( int angle = grip_open;angle <= grip_closed; angle++){
     gripper.write(angle);
     delay(10);
   }
-  delay(1000)
+  delay(1000);
 }
 
 void Release(){
@@ -132,9 +133,7 @@ void loop() {
   elb_angl    = int(config_1[1]);
   base_angl = int(config_3[0]);
 
-  Grab();
-  delay(5000)
-  Release();
-  }
-
+  // Grab();
+  // delay(5000);
+  // Release();
 }
